@@ -26,10 +26,10 @@ args = vars(args)
 
 
 # path des dossier qui contient les images
-#image_path = '/home/tabde/notebooks/nucleus/train/img/'
-#label_path = '/home/tabde/notebooks/nucleus/train/msk/'
+image_path = '/home/tabde/notebooks/nucleus/train/img/'
+label_path = '/home/tabde/notebooks/nucleus/train/msk/'
 # dossier de destination ou on va créee les dossier pour chaque set 
-#output_folder = '/home/tabde/notebooks/TEST_CSV/'
+output_folder = '/home/tabde/notebooks/TEST_CSV/'
 
 image_files = os.listdir(image_path)
 random.shuffle(image_files)
@@ -52,7 +52,13 @@ for count in Set_data:
 
     #Selection aléatoires des images pour chaque set 
     selected_images = random.sample(image_files, count)
-
+    
+    # for img in selected_images:
+    #     if img not in images_folder:
+    #         selected_images.append(image)
+    #     else :
+    #         image = random.choice(image_files)
+    
     images_folder.extend(selected_images)
     #liste pour génerer le csv file 
     folder_image_dic.extend([(image, folder_index+1) for image in selected_images])
