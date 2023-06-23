@@ -13,109 +13,210 @@ import matplotlib.pyplot as plt
 from shutil import copyfile
 
 
-def generate_set_data(images_path):
-    #generate a list of set for exemple : set data = [1,1,2,4,8,16,32,....] based on power of 2
-    number_of_images = len(os.listdir(images_path))
-    result = []
-    power = 0
-    num = 2 ** power
-    # to set the first element to 1
-    result.append(1)
-    while num < number_of_images:
-        result.append(num)
-        power += 1
-        num = 2 ** power
-    return result
+
+"""function to generate a list of set dat based in a number of images in the path 
+"""
+
+def generate_set_data(image_path):
+    # Get the number of images in the specified directory
+    number_of_images = len(os.listdir(image_path))
+    
+    # Create an empty list to store the set data
+    set_data = []
+    
+    # Loop until the number of images is greater than or equal to 1
+    while number_of_images >= 1:
+        # Append the current number of images to the set data list
+        set_data.append(number_of_images)
+        
+        # Divide the number of images by 2 and update the value of number_of_images
+        number_of_images = number_of_images // 2
+    
+    # Return the set data list
+    return set_data
+
+# create  folders based on the number of set (len(set_data()))
 
 
 
-# create  folders based on the nomber of set len(Set_data())
 
-def Creation_of_folders(image_path,output_folder,Set_data):
+
+
+def creation_of_folders(image_path, output_path):
     folder_index = 0
     start_index = 0
-    
-    folder_image_dic = []   # Will contain a tuple of (image, folder_index)
-    os.makedirs(output_folder, exist_ok=True)
-    image_files = os.listdir(image_path)
-    random.shuffle(image_files)
-    
-    for count in range (len(Set_data) -1) :
-        image_f = os.path.join(output_folder, f'img_set_{folder_index+1}')
+
+    # Create the output path if it doesn't exist
+    os.makedirs(output_path, exist_ok=True)
+
+    # Generate set data by calling the generate_set_data function 
+    set_data = generate_set_data(image_path)
+
+    # Iterate over the set data
+    for count in range(len(set_data)):
+        # Create a folder for images
+        image_f = os.path.join(output_path, f'img_set_{folder_index+1}')
         os.makedirs(image_f, exist_ok=True)
-        label_f = os.path.join(output_folder, f'msk_set_{folder_index+1}')
+
+        # Create a folder for labels
+        label_f = os.path.join(output_path, f'msk_set_{folder_index+1}')
         os.makedirs(label_f, exist_ok=True)
-        end_index = start_index + Set_data[count]
-        selected_elements = image_files[start_index:end_index]
-        folder_image_dic.extend([(image, folder_index+1) for image in selected_elements])
-        start_index = end_index
+
+        # Increment the folder index
         folder_index += 1
-
-    return folder_image_dic
-
+    return
 
 
-def generate_csv_file(folder_image_dic, nom_du_csv_file ,Set_data):
-    csv_file = nom_du_csv_file +'.csv'
+
+
+
+
+
+def generate_csv_file(image_path):
+    # Name of the CSV file to be generated
+    csv_file = 'image_msk_csv_file.csv' 
+
+    # Generate set data 
+    set_data = generate_set_data(image_path)  
+
+    # Reverse the order of set_data elements
+    set_data = set_data[::-1]  
+
+    folder_index = 0  
+    start_index = 0
+
+    # List to store tuples of (image, folder_index)
+    image_folder_index = []  
+
+    # Get the list of image files in the given image path
+    image_files = os.listdir(image_path)  
+
+    # Shuffle the image files randomly
+    random.shuffle(image_files)  
+
+    # Iterate over the set_data
+    for count in set_data:
+        # Calculate the end index for selecting elements from image_files
+        end_index = start_index + count  
+
+        # Select elements from image_files based on the end index
+        selected_elements = image_files[0:end_index]  
+
+        # Add tuples of (image, folder_index) to image_folder_index
+        image_folder_index.extend([(image, folder_index+1) for image in selected_elements])  
+
+        folder_index += 1  
+
+    # Create and write to the CSV file
     with open(csv_file, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['Image', 'Folder'])
-            writer.writerows(folder_image_dic)
+        writer = csv.writer(file)
 
-    df4 = pd.read_csv(csv_file)
-    folder_x= []
+        # Write the header row
+        writer.writerow(['Image', 'Folder']) 
 
-    for i in range(0, len(Set_data)-1):
-            
-            folder_name = 'folder_' + str(i) 
-            folder = np.array(df4[df4['Folder'] <= i+1].iloc[:, 0]).tolist()
-            globals()[folder_name] = folder
-            folder_x.append(folder)
-    return folder_x
-           
+        # Write the image and folder index to the CSV file
+        writer.writerows(image_folder_index) 
 
-def copy_file_to_set(folder_x,image_path, label_path,output_folder):
+    # Get the current working directory
+    current_directory = os.getcwd()  
+
+    # Construct the full path to the CSV file
+    path_to_csv = os.path.join(current_directory, csv_file)  
+    print(f"The csv file has been successfully generated under the name '{csv_file}'")
+    print(f"Your file is saved in the directory: '{path_to_csv}'")
+
+    # Return the path to the generated CSV file
+    return path_to_csv  
+
+
+
+
+
+
+
+def copy_files_to_folders(image_path, path_to_csv_file, label_path, output_path):
     folder_index = 0
-    for folder in folder_x:
-        for i in range(len(folder)):
-            file_name = folder[i]
-            source_path = os.path.join(image_path, file_name)
-            destination_path.
-             = os.path.join(output_folder, f'img_set_{folder_index+1}', file_name)
-            shutil.copy(source_path, destination_path)
-            label_source_path = os.path.join(label_path, file_name)
-            if os.path.isfile(label_source_path):
-                    label_destination_path = output_folder + f'msk_set_{folder_index+1}' 
-                    shutil.copy(label_source_path, label_destination_path)
-                    #print(f"Image '{file_name}' copied successfully.")
-            else:
+
+    # Read the CSV file using pandas
+    df = pd.read_csv(path_to_csv_file)
+
+    # Extract the 'Folder' and 'Image' columns as lists
+    liste_of_set = df['Folder'].tolist()
+    liste_of_filename = df['Image'].tolist()
+
+    # Determine the number of folders
+    number_of_folders = set(liste_of_set)
+
+    # Iterate over the unique folders
+    for folder in number_of_folders:
+        # Iterate over the elements in the 'liste_of_set'
+        for f in range(len(liste_of_set)):
+            # Check if the current element matches the folder
+            if liste_of_set[f] == folder:
+                # Get the filename
+                file_name = liste_of_filename[f]  
+
+                # Construct the image source path
+                image_source_path = os.path.join(image_path, file_name)  
+
+                # Construct the image destination path
+                destination_path = os.path.join(output_path, f'img_set_{folder_index+1}', file_name)  
+
+                # Copy the file from source to destination
+                shutil.copy(image_source_path, destination_path)  
+
+                # Construct the label source path
+                label_source_path = os.path.join(label_path, file_name)  
+
+                # Check if the label file exists
+                if os.path.isfile(label_source_path): 
+                    # Construct the label destination path
+                    label_destination_path = os.path.join(output_path, f'msk_set_{folder_index+1}')  
+                    # Copy the label file to the destination
+                    shutil.copy(label_source_path, label_destination_path)  
+
+                else:
                     print(f"Image '{file_name}' not found in the source folder.")
-        folder_index += 1
+        # Increment the folder index
+        folder_index += 1  
+    return
 
 
-def Generate_fold_csv(image_path,label_path,output_folder):
-    Set_data = generate_set_data(image_path)
-    #print(Set_data )
-    folder_image_dic=Creation_of_folders(image_path,output_folder,Set_data)
-    folder_x = generate_csv_file(folder_image_dic, 'NEW_csv_file' ,Set_data)
-    copy_file_to_set(folder_x,image_path, label_path,output_folder)
-    print("CSV file was generated successfully , files are copied to folders ......")
+
+def generate_fold_csv(image_path, label_path, output_path):
+    # Generate set data based on the provided image path
+    set_data = generate_set_data(args.image_path)  
+
+    # Create folders based on the provided image and output paths
+    creation_of_folders(args.image_path, args.output_path)  
+
+    # Generate a CSV file based on the provided image path
+    csv_path = generate_csv_file(args.image_path)  
+
+    # Copy files to the folders based on the provided paths
+    copy_files_to_folders(args.image_path, csv_path, args.label_path, args.output_path)  
+
+
+
+
+
+
 
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description="csv_generate.")
     parser.add_argument("-i", "--image_path", type=str, default=None,
         help="The path to the raw data (images)")
-    parser.add_argument("-l", "--labels_path", type=str,
+    parser.add_argument("-l", "--label_path", type=str,
         help="The path to the raw data (labels)")
     parser.add_argument("-o", "--output_path", type=str,
         help="The path to output folder " )
 
     args = parser.parse_args()
-  
-    Generate_fold_csv(args.image_path,args.labels_path,args.output_path)
+    
+    generate_fold_csv(args.image_path,args.label_path,args.output_path)
    
-   
+
 
 
 
