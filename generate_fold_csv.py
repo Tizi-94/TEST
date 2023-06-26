@@ -1,6 +1,14 @@
+"""
+---------------------------------------------------------------------------------------------
+the script enables the generation of a CSV file based on image data and creation of folders 
+to store the image and label data to provide an organized representation of the images for 
+training .
+----------------------------------------------------------------------------------------------
+"""
+
+
 import os
 import random
-import csv
 import shutil
 import os
 import argparse
@@ -11,13 +19,24 @@ from skimage.io import imread
 import SimpleITK as sitk
 import matplotlib.pyplot as plt
 from shutil import copyfile
+import pydoc
 
 
 
-"""function to generate a list of set dat based in a number of images in the path 
-"""
 
 def generate_set_data(image_path):
+
+    """function to generate a list of set data based in a number of images in image_path 
+
+    Parameters:
+
+    - image_path (str): The path for training images .
+    
+    Returns:
+
+    - list : list of set data .
+    """
+
     # Get the number of images in the specified directory
     number_of_images = len(os.listdir(image_path))
     
@@ -35,22 +54,35 @@ def generate_set_data(image_path):
     # Return the set data list
     return set_data
 
-# create  folders based on the number of set (len(set_data()))
 
 
 
 
 
 
-def creation_of_folders(image_path, output_path):
+def creation_of_folders(image_path, output_path,set_data):
+
+    """function to create folders under the name (img_set_x et msk_set_x ) in output_path 
+
+    Parameters:
+
+    - image_path (str): the path for training images .
+
+    - output_path ( str ): the path to output folder where the folders will be creat
+
+    - set_data (list ) : list of set data 
+
+    Return: returns nothing
+    """
+
     folder_index = 0
     start_index = 0
 
     # Create the output path if it doesn't exist
     os.makedirs(output_path, exist_ok=True)
 
-    # Generate set data by calling the generate_set_data function 
-    set_data = generate_set_data(image_path)
+    # # Generate set data by calling the generate_set_data function 
+    # set_data = generate_set_data(image_path)
 
     # Iterate over the set data
     for count in range(len(set_data)):
@@ -73,8 +105,22 @@ def creation_of_folders(image_path, output_path):
 
 
 def generate_csv_file(image_path):
+
+    """function to generate csv file with pandas 
+
+    Parameters:
+
+    - image_path (str): the path for training images .
+
+    Returns:
+
+    - path_to_csv : the path where csv file was saved .
+
+    Return: returns nothing
+    """
+
     # Name of the CSV file to be generated
-    csv_file = 'image_msk_csv_file.csv' 
+    csv_file = 'image_msk_csv_file.csv'
 
     # Generate set data 
     set_data = generate_set_data(image_path)  
@@ -104,18 +150,11 @@ def generate_csv_file(image_path):
 
         # Add tuples of (image, folder_index) to image_folder_index
         image_folder_index.extend([(image, folder_index+1) for image in selected_elements])  
-
         folder_index += 1  
 
-    # Create and write to the CSV file
-    with open(csv_file, mode='w', newline='') as file:
-        writer = csv.writer(file)
-
-        # Write the header row
-        writer.writerow(['Image', 'Folder']) 
-
-        # Write the image and folder index to the CSV file
-        writer.writerows(image_folder_index) 
+    # Create the CSV file with pandas 
+    df = pd.DataFrame(image_folder_index, columns=['Image', 'Folder'])
+    df.to_csv(csv_file, index=False)
 
     # Get the current working directory
     current_directory = os.getcwd()  
@@ -135,8 +174,21 @@ def generate_csv_file(image_path):
 
 
 def copy_files_to_folders(image_path, path_to_csv_file, label_path, output_path):
-    folder_index = 0
+    """
+    Copy files (images and labels) from (image_path, label_path) to output_path
 
+    Parameters:
+
+    - image_path (str): the path to training images .
+
+    - path_to_csv (str)  : the path where csv file was saved .
+
+    - label_path (str) : the path to labels .
+
+    - output_path ( str ): the path to output folder .
+
+    """
+    folder_index = 0
     # Read the CSV file using pandas
     df = pd.read_csv(path_to_csv_file)
 
@@ -183,12 +235,26 @@ def copy_files_to_folders(image_path, path_to_csv_file, label_path, output_path)
 
 
 
+
+
 def generate_fold_csv(image_path, label_path, output_path):
+
+    """ main function to call all other functions 
+    
+    Parameters:
+
+    - image_path (str): the path to training images .
+
+    - label_path (str) : the path to labels .
+
+    - output_path ( str ): the path to output folder .
+
+    """
     # Generate set data based on the provided image path
     set_data = generate_set_data(args.image_path)  
 
     # Create folders based on the provided image and output paths
-    creation_of_folders(args.image_path, args.output_path)  
+    creation_of_folders(args.image_path, args.output_path,set_data )  
 
     # Generate a CSV file based on the provided image path
     csv_path = generate_csv_file(args.image_path)  
