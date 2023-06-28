@@ -25,7 +25,6 @@ import pydoc
 
 
 def generate_set_data(image_path):
-
     """function to generate a list of set data based in a number of images in image_path 
 
     Parameters:
@@ -36,7 +35,6 @@ def generate_set_data(image_path):
 
     - list : list of set data .
     """
-
     # Get the number of images in the specified directory
     number_of_images = len(os.listdir(image_path))
     
@@ -61,7 +59,6 @@ def generate_set_data(image_path):
 
 
 def creation_of_folders(image_path, output_path,set_data):
-
     """function to create folders under the name (img_set_x et msk_set_x ) in output_path 
 
     Parameters:
@@ -74,7 +71,6 @@ def creation_of_folders(image_path, output_path,set_data):
 
     Return: returns nothing
     """
-
     folder_index = 0
     start_index = 0
 
@@ -104,8 +100,7 @@ def creation_of_folders(image_path, output_path,set_data):
 
 
 
-def generate_csv_file(image_path):
-
+def generate_csv_file(image_path, set_data):
     """function to generate csv file with pandas 
 
     Parameters:
@@ -114,16 +109,13 @@ def generate_csv_file(image_path):
 
     Returns:
 
-    - path_to_csv : the path where csv file was saved .
+    - path_to_csv (str): the path where csv file was saved .
 
-    Return: returns nothing
     """
-
     # Name of the CSV file to be generated
     csv_file = 'image_msk_csv_file.csv'
 
-    # Generate set data 
-    set_data = generate_set_data(image_path)  
+  
 
     # Reverse the order of set_data elements
     set_data = set_data[::-1]  
@@ -173,20 +165,18 @@ def generate_csv_file(image_path):
 
 
 
-def copy_files_to_folders(image_path, path_to_csv_file, label_path, output_path):
-    """
-    Copy files (images and labels) from (image_path, label_path) to output_path
+def copy_files_to_folders(image_path, label_path, output_path, path_to_csv_file,):
+    """Copy files (images and labels) from (image_path, label_path) to output_path
 
     Parameters:
 
-    - image_path (str): the path to training images .
+    - image_path (str) : the path to training images .
 
-    - path_to_csv (str)  : the path where csv file was saved .
+    - path_to_csv (str) : the path where csv file was saved .
 
     - label_path (str) : the path to labels .
 
-    - output_path ( str ): the path to output folder .
-
+    - output_path (str): the path to output folder .
     """
     folder_index = 0
     # Read the CSV file using pandas
@@ -237,37 +227,6 @@ def copy_files_to_folders(image_path, path_to_csv_file, label_path, output_path)
 
 
 
-def generate_fold_csv(image_path, label_path, output_path):
-
-    """ main function to call all other functions 
-    
-    Parameters:
-
-    - image_path (str): the path to training images .
-
-    - label_path (str) : the path to labels .
-
-    - output_path ( str ): the path to output folder .
-
-    """
-    # Generate set data based on the provided image path
-    set_data = generate_set_data(args.image_path)  
-
-    # Create folders based on the provided image and output paths
-    creation_of_folders(args.image_path, args.output_path,set_data )  
-
-    # Generate a CSV file based on the provided image path
-    csv_path = generate_csv_file(args.image_path)  
-
-    # Copy files to the folders based on the provided paths
-    copy_files_to_folders(args.image_path, csv_path, args.label_path, args.output_path)  
-
-
-
-
-
-
-
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description="csv_generate.")
@@ -279,11 +238,14 @@ if __name__=='__main__':
         help="The path to output folder " )
 
     args = parser.parse_args()
-    
-    generate_fold_csv(args.image_path,args.label_path,args.output_path)
-   
 
+    # Create folders based on the provided image and output paths
+    creation_of_folders(args.image_path, args.output_path,generate_set_data(args.image_path) )  
 
+    # Copy files to the folders based on the provided paths
+    copy_files_to_folders(args.image_path , args.label_path, args.output_path, generate_csv_file(args.image_path, generate_set_data(args.image_path)))     
+
+    #print(generate_csv_file.__doc__)
 
 
 
