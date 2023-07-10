@@ -171,14 +171,9 @@ def copy_files_to_folders(image_path, label_path, output_path, csv_path_file,):
         msk_output_folder = os.path.join(output_path, f'msk_set_{folder_i}')
         os.makedirs(msk_output_folder, exist_ok=True)
 
-
-    
-    
-    
-
+    # Copy to the new folders 
     # Determine the number of folders
     number_of_folders = set(liste_of_set)
-    print("numer of folders ", number_of_folders)
     # Iterate over the unique folders
     for folder in number_of_folders:
         # Iterate over the elements in the 'liste_of_set'
@@ -192,7 +187,7 @@ def copy_files_to_folders(image_path, label_path, output_path, csv_path_file,):
                 image_source_path = os.path.join(image_path, file_name)  
 
                 # Construct the image destination path
-                destination_path = os.path.join(output_path, f'img_set_{folder_index}', file_name)  
+                destination_path = os.path.join(output_path, f'img_set_{folder_index+1}', file_name)  
 
                 # Copy the file from source to destination
                 shutil.copy(image_source_path, destination_path)  
@@ -203,7 +198,7 @@ def copy_files_to_folders(image_path, label_path, output_path, csv_path_file,):
                 # Check if the label file exists
                 if os.path.isfile(label_source_path): 
                     # Construct the label destination path
-                    label_destination_path = os.path.join(output_path, f'msk_set_{folder_index}')  
+                    label_destination_path = os.path.join(output_path, f'msk_set_{folder_index+1}')  
                     # Copy the label file to the destination
                     shutil.copy(label_source_path, label_destination_path)  
 
